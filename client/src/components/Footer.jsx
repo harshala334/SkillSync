@@ -11,7 +11,7 @@ const Footer = () => {
         e.preventDefault();
 
         try {
-            const response = await axios.post("http://localhost:5000/api/subscribe/subscribe", { email });
+            const response = await axios.post(`${import.meta.env.VITE_REACT_APP_BACKEND_BASE_URL}/api/subscribe/subscribe`, { email });
             setNotification({ type: "success", message: response.data.message });
             setEmail('');
         } catch (error) {
