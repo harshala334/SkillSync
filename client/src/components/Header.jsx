@@ -45,7 +45,7 @@ export default function Header() {
 
           {/* Login Button - Right aligned */}
           <div className="flex flex-1 justify-end">
-            <a href="/login" className="text-sm/6 font-semibold text-gray-900">
+            <a href="/auth" className="text-sm/6 font-semibold text-gray-900">
               Login
             </a>
           </div>
