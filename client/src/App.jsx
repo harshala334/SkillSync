@@ -6,7 +6,7 @@ import Chatbot from "./components/Chatbot";
 import Footer from "./components/Footer";
 import Features from "./pages/Features";
 import AuthPage from "./pages/AuthPage";
-import SignUpPage from "./pages/SignupPage";
+import SignUpPage from "./pages/SignUpPage";
 
 function Layout({ children }) {
   return (
