@@ -5,6 +5,8 @@ import HomePage from './pages/HomePage';
 import Chatbot from "./components/Chatbot";
 import Footer from "./components/Footer";
 import Features from "./pages/Features";
+import AuthPage from "./pages/AuthPage";
+import SignUpPage from "./pages/SignupPage";
 
 function App() {
   return (
@@ -22,11 +24,12 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/features" element={<Features/>} />
 
-            {/* <Route path="/auth" element={<AuthPage />} /> */}
+            <Route path="/auth" element={<AuthPage />} />
             {/* <Route path="/profile" element={<ProfilePage />} /> */}
             {/* <Route path="/projects" element={<ProjectsPage />} /> */}
             {/* <Route path="/mentorship" element={<MentorshipPage />} /> */}
             {/* <Route path="/journal" element={<JournalPage />} /> */}
+            <Route path="/signup" element={<SignUpPage />} />
           </Routes>
         </main>
         <Chatbot />
