@@ -1,6 +1,6 @@
 export async function loginOrSignup(email, password, name) {
   const apiBaseUrl = import.meta.env.VITE_REACT_APP_BACKEND_BASE_URL || '';
-  const endpoint = name ? `${apiBaseUrl}/api/auth/signup` : `${apiBaseUrl}/api/auth/login`;
+  const endpoint = name ? `${apiBaseUrl}api/auth/signup` : `${apiBaseUrl}api/auth/login`;
 
   // Debug message to log the endpoint being used
   console.log("API Base URL:", apiBaseUrl);
