@@ -7,12 +7,12 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Features', href: '/features' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'AI Skill Coach', href: '#skill-coach' },
-  { name: 'Teammates', href: '#teammates' },
-  { name: 'Portfolio', href: '#portfolio' },
-  { name: 'Leaderboard', href: '#leaderboard' },
-  { name: 'Mentorship', href: '#mentorship' },
+  { name: 'Projects', href: '/projects' },
+  { name: 'AI Skill Coach', href: '/skill-coach' },
+  { name: 'Teammates', href: '/teammates' },
+  { name: 'Portfolio', href: '/profile' },
+  { name: 'Leaderboard', href: '/leaderboard' },
+  { name: 'Mentorship', href: '/mentorship' },
 ]
 
 export default function Header() {
@@ -28,7 +28,7 @@ export default function Header() {
               <span className="sr-only">SkillSync</span>
               <img
                 alt="SkillSync Logo"
-                src="../../src/assets/skillsync_logo.png"
+                src="/src/assets/skillsync_logo.png"
                 className="h-8 w-auto"
               />
             </a>
@@ -72,7 +72,7 @@ export default function Header() {
                 <span className="sr-only">SkillSync</span>
                 <img
                   alt="SkillSync Logo"
-                  src="../../src/assets/skillsync_logo.png"
+                  src="/src/assets/skillsync_logo.png"
                   className="h-8 w-auto"
                 />
               </a>
