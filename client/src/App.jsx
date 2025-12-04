@@ -13,6 +13,7 @@ import ExplorePage from "./pages/ExplorePage";
 import TeamMates from "./pages/TeamMates";
 import LeaderBoardPage from "./pages/LeaderBoardPage";
 import MentorshipPage from "./pages/MentorshipPage";
+import SkillCoachPage from "./pages/SkillCoachPage";
 
 function Layout({ children }) {
   return (
@@ -47,11 +48,12 @@ function AppRoutes() {
           <Route path="/" element={<Layout><HomePage /></Layout>} />
           <Route path="/features" element={<Layout><Features /></Layout>} />
           <Route path="/profile" element={<Layout><ProfilePage /></Layout>} />
-          <Route path="/projects" element={<Layout><ProjectsPage/></Layout>}/>
-          <Route path="/explore" element={<Layout><ExplorePage/></Layout>}/>
+          <Route path="/projects" element={<Layout><ProjectsPage /></Layout>} />
+          <Route path="/explore" element={<Layout><ExplorePage /></Layout>} />
           <Route path="/teammates" element={<Layout><TeamMates /></Layout>} />
+          <Route path="/skill-coach" element={<Layout><SkillCoachPage /></Layout>} />
           <Route path="leaderboard" element={<Layout><LeaderBoardPage /></Layout>} />
-          <Route path="/mentorship" element={<Layout><MentorshipPage/></Layout>}/>
+          <Route path="/mentorship" element={<Layout><MentorshipPage /></Layout>} />
         </>
       )}
     </Routes>
