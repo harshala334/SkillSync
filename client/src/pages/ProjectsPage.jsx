@@ -20,7 +20,7 @@ const projects = [
       "Kanban-style boards to plan, assign roles, and track project progress in real-time.",
     icon: <KanbanSquare className="w-6 h-6" />,
     status: "In Progress",
-    link: "/projects"
+    link: "/project-board"
   },
   {
     title: "Smart Resume / Portfolio Builder",
@@ -28,7 +28,7 @@ const projects = [
       "Generate beautiful resumes and portfolios synced with your GitHub and AI-enhanced descriptions.",
     icon: <FileText className="w-6 h-6" />,
     status: "Planned",
-    link: "/profile"
+    link: "/resume-builder"
   },
   {
     title: "GenAI Skill Coach",
@@ -46,7 +46,7 @@ export default function ProjectsPage() {
       {/* Header Section */}
       <div className="text-center max-w-3xl mx-auto mb-16">
         <h2 className="text-4xl md:text-5xl font-heading font-bold text-foreground mb-6">
-          🚀 Our <span className="text-gradient">Projects</span>
+          🚀 Our <span className="text-gradient">Modules</span>
         </h2>
         <p className="text-lg text-muted-foreground">
           Explore the core modules of <span className="font-semibold text-foreground">SkillSync</span>,
@@ -72,10 +72,10 @@ export default function ProjectsPage() {
                   </div>
                   <span
                     className={`text-xs font-semibold px-3 py-1 rounded-full border ${project.status === "Live"
-                        ? "bg-green-500/10 text-green-600 border-green-200"
-                        : project.status === "In Progress"
-                          ? "bg-yellow-500/10 text-yellow-600 border-yellow-200"
-                          : "bg-gray-500/10 text-gray-600 border-gray-200"
+                      ? "bg-green-500/10 text-green-600 border-green-200"
+                      : project.status === "In Progress"
+                        ? "bg-yellow-500/10 text-yellow-600 border-yellow-200"
+                        : "bg-gray-500/10 text-gray-600 border-gray-200"
                       }`}
                   >
                     {project.status}

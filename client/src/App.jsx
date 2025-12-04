@@ -14,6 +14,8 @@ import TeamMates from "./pages/TeamMates";
 import LeaderBoardPage from "./pages/LeaderBoardPage";
 import MentorshipPage from "./pages/MentorshipPage";
 import SkillCoachPage from "./pages/SkillCoachPage";
+import ResumeBuilderPage from "./pages/ResumeBuilderPage";
+import ProjectBoardPage from "./pages/ProjectBoardPage";
 
 function Layout({ children }) {
   return (
@@ -52,6 +54,8 @@ function AppRoutes() {
           <Route path="/explore" element={<Layout><ExplorePage /></Layout>} />
           <Route path="/teammates" element={<Layout><TeamMates /></Layout>} />
           <Route path="/skill-coach" element={<Layout><SkillCoachPage /></Layout>} />
+          <Route path="/resume-builder" element={<Layout><ResumeBuilderPage /></Layout>} />
+          <Route path="/project-board" element={<Layout><ProjectBoardPage /></Layout>} />
           <Route path="leaderboard" element={<Layout><LeaderBoardPage /></Layout>} />
           <Route path="/mentorship" element={<Layout><MentorshipPage /></Layout>} />
         </>
