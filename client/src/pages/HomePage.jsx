@@ -23,7 +23,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-3xl py-32 sm:py-48 lg:py-56">
           <div className="hidden sm:mb-8 sm:flex sm:justify-center">
             <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-muted-foreground ring-1 ring-border hover:ring-primary/50 transition-all duration-300 bg-white/50 backdrop-blur-sm">
-              Announcing our next round of funding.{' '}
+              Find your perfect teammate today!{' '}
               <a href="#" className="font-semibold text-primary">
                 <span aria-hidden="true" className="absolute inset-0" />
                 Read more <span aria-hidden="true">&rarr;</span>
