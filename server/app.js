@@ -4,7 +4,8 @@ const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 
-dotenv.config();
+const path = require("path");
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const app = express();
 
@@ -59,6 +60,8 @@ const mentorRoutes = require("./routes/mentor.routes");
 app.use("/api/mentors", mentorRoutes);
 const resumeRoutes = require("./routes/resume.routes");
 app.use("/api/resume", resumeRoutes);
+const aiRoutes = require("./routes/ai.routes");
+app.use("/api/ai", aiRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
