@@ -1,22 +1,37 @@
+import api from './api';
+
+export const login = async (email, password) => {
+  const response = await api.post('/api/auth/login', { email, password });
+  if (response.data.token) {
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+  }
+  return response.data;
+};
+
+export const signup = async (email, password, name) => {
+  const response = await api.post('/api/auth/signup', { email, password, name });
+  if (response.data.token) {
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+  }
+  return response.data;
+};
+
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
+export const getCurrentUser = () => {
+  return JSON.parse(localStorage.getItem('user'));
+};
+
+// Keep the old function for backward compatibility if needed, but updated logic
 export async function loginOrSignup(email, password, name) {
-  const apiBaseUrl = import.meta.env.VITE_REACT_APP_BACKEND_BASE_URL || '';
-  const endpoint = name ? `${apiBaseUrl}api/auth/signup` : `${apiBaseUrl}api/auth/login`;
-
-  console.log("API Base URL:", apiBaseUrl);
-  console.log("Endpoint:", endpoint);
-
-  const body = name ? { name, email, password } : { email, password };
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    console.log("Response Status:", res.status);
-    return res.json();
-  } catch (error) {
-    console.error("Error during fetch:", error);
-    throw error;
+  if (name) {
+    return signup(email, password, name);
+  } else {
+    return login(email, password);
   }
 }
