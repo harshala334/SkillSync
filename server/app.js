@@ -57,6 +57,8 @@ const taskRoutes = require("./routes/task.routes");
 app.use("/api/tasks", taskRoutes);
 const mentorRoutes = require("./routes/mentor.routes");
 app.use("/api/mentors", mentorRoutes);
+const resumeRoutes = require("./routes/resume.routes");
+app.use("/api/resume", resumeRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

@@ -8,86 +8,92 @@ import { Download, Plus, Trash2, ExternalLink, FileText } from "lucide-react";
 import html2pdf from "html2pdf.js";
 
 import { latexTemplate } from "./latexTemplate";
+import { saveResume, getResume } from "../services/resumeService";
 
 export default function ResumeBuilderPage() {
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [resumeData, setResumeData] = useState({
-        name: "Harshala Mahajan",
-        location: "Mumbai, Maharashtra - 400019",
-        phone: "+91-8766512865",
-        email: "mharshala334@gmail.com",
-        linkedin: "linkedin.com/in/harshala-m",
-        github: "github.com/harshala334",
-        portfolio: "leetcode.com/HarshalaM",
-        education: [
-            {
-                id: 1,
-                institute: "Veermata Jijabai Technological Institute, Mumbai",
-                degree: "B.Tech. Information Technology",
-                location: "Mumbai, India",
-                duration: "June 2022 -- May 2026"
-            }
-        ],
-        experience: [
-            {
-                id: 1,
-                role: "Software Engineering Intern",
-                company: "Google",
-                location: "Pune",
-                duration: "May 2025 -- July 2025",
-                points: [
-                    "Engineered a self-service portal for AlloyDB vector search performance benchmarking.",
-                    "Pioneered an analytical dashboard showcasing AlloyDB performance benchmarking results.",
-                    "Deployed on GCP with Uberproxy for seamless internal access, enhancing UX."
-                ]
-            }
-        ],
-        projects: [
-            {
-                id: 1,
-                title: "Real Estate Platform",
-                tech: "MongoDB, React.js, Node.js, Express.js, Prisma",
-                link: "github.com/harshala334/real-estate",
-                date: "August 2024",
-                points: [
-                    "Built a responsive real estate platform with React.js and dynamic routing.",
-                    "Implemented property filtering system and user profile features.",
-                    "Optimized frontend state management using Context API."
-                ]
-            },
-            {
-                id: 2,
-                title: "SkillSync: Peer Learning Hub",
-                tech: "MERN Stack, Socket.io, Cloudinary, JWT",
-                link: "skill-sync.vercel.app",
-                date: "July 2025",
-                points: [
-                    "Developed a full-stack collaboration hub for students to form teams.",
-                    "Engineered authentication using JWT & Google OAuth.",
-                    "Implemented a Kanban-style project board with real-time updates."
-                ]
-            }
-        ],
+        name: "",
+        location: "",
+        phone: "",
+        email: "",
+        linkedin: "",
+        github: "",
+        portfolio: "",
+        education: [],
+        experience: [],
+        projects: [],
         skills: {
-            languages: "Python, Java, JavaScript, Typescript, SQL",
-            tools: "VS Code, Git/GitHub, Vercel, Jupyter Notebook, Linux, Postman",
-            frameworks: "MERN Stack, REST APIs, Machine Learning, Data Analytics, GCP"
+            languages: "",
+            tools: "",
+            frameworks: ""
         },
-        coursework: [
-            "Data Structures & Algorithms", "DBMS", "Object Oriented Programming",
-            "Operating Systems", "Software Engineering", "Artificial Intelligence"
-        ],
-        achievements: [
-            "Awarded the Reliance Foundation Undergraduate Scholarship (2022--2026).",
-            "Technical Head, E-Cell VJTI.",
-            "Chief Technical Lead, Rangawardhan VJTI.",
-            "Coding Operations Head, Technovanza VJTI."
-        ],
-        certifications: [
-            "Machine Learning Specialization by Stanford University & DeepLearning.AI",
-            "Google Data Analytics Professional Certificate",
-            "Accenture North America Data Analytics Job Simulation"
-        ]
+        coursework: [],
+        achievements: [],
+        certifications: []
     });
+
+    useEffect(() => {
+        loadResume();
+    }, []);
+
+    const loadResume = async () => {
+        try {
+            const data = await getResume();
+            if (data) {
+                // Merge backend data with structure to ensure all fields exist
+                setResumeData(prev => ({
+                    ...prev,
+                    ...data.personalInfo, // Spread personal info
+                    education: data.education || [],
+                    experience: data.experience || [],
+                    projects: data.projects || [],
+                    skills: data.skills || { languages: "", tools: "", frameworks: "" },
+                    coursework: data.coursework || [],
+                    achievements: data.achievements || [],
+                    certifications: data.certifications || []
+                }));
+            }
+        } catch (err) {
+            console.error("Failed to load resume", err);
+            // If 404, just keep defaults
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            // Re-structure to match backend schema expected
+            const payload = {
+                personalInfo: {
+                    name: resumeData.name,
+                    location: resumeData.location,
+                    phone: resumeData.phone,
+                    email: resumeData.email,
+                    linkedin: resumeData.linkedin,
+                    github: resumeData.github,
+                    portfolio: resumeData.portfolio
+                },
+                education: resumeData.education,
+                experience: resumeData.experience,
+                projects: resumeData.projects,
+                skills: resumeData.skills,
+                coursework: resumeData.coursework,
+                achievements: resumeData.achievements,
+                certifications: resumeData.certifications
+            };
+            await saveResume(payload);
+            alert("Resume saved successfully!");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to save resume");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const handleDownloadTex = () => {
         let tex = latexTemplate;
@@ -252,6 +258,9 @@ export default function ResumeBuilderPage() {
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-heading font-bold">Resume Editor</h1>
                         <div className="flex gap-2">
+                            <Button onClick={handleSave} variant="secondary" className="bg-green-600 hover:bg-green-700 text-white" disabled={saving}>
+                                {saving ? "Saving..." : "Save Progress"}
+                            </Button>
                             <Button onClick={handleDownloadTex} variant="outline" className="border-primary text-primary hover:bg-primary/10">
                                 <FileText className="w-4 h-4 mr-2" /> Download .tex
                             </Button>
