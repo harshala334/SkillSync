@@ -2,13 +2,19 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, UserPlus, ArrowRight } from "lucide-react";
-import { getAllProjects, joinProject } from "../services/projectService";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Users, UserPlus, ArrowRight, Plus } from "lucide-react";
+import { getAllProjects, joinProject, createProject } from "../services/projectService";
 
 export default function TeamMates() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Create Project State
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newProject, setNewProject] = useState({ title: '', description: '', techStack: '' });
 
   useEffect(() => {
     fetchProjects();
@@ -37,6 +43,20 @@ export default function TeamMates() {
     }
   };
 
+  const handleCreateProject = async (e) => {
+    e.preventDefault();
+    try {
+      await createProject(newProject);
+      alert("Project created successfully!");
+      setNewProject({ title: '', description: '', techStack: '' });
+      setShowCreateForm(false);
+      fetchProjects();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create project");
+    }
+  };
+
   if (loading) return <div className="text-center pt-24 text-foreground">Loading projects...</div>;
   if (error) return <div className="text-center pt-24 text-red-500">{error}</div>;
 
@@ -52,9 +72,50 @@ export default function TeamMates() {
           <p className="text-lg text-muted-foreground">
             Connect with skilled peers, join exciting projects, and build something amazing together.
           </p>
+          <Button onClick={() => setShowCreateForm(!showCreateForm)} variant="outline" className="mt-4">
+            <Plus className="w-4 h-4 mr-2" />
+            {showCreateForm ? 'Cancel' : 'Create New Project'}
+          </Button>
         </div>
 
-        {projects.length === 0 ? (
+        {/* Create Project Form */}
+        {showCreateForm && (
+          <Card className="max-w-lg mx-auto border-primary/20 bg-secondary/10">
+            <CardHeader>
+              <CardTitle>Create a New Project</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateProject} className="space-y-4">
+                <div>
+                  <Input
+                    placeholder="Project Title"
+                    value={newProject.title}
+                    onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Textarea
+                    placeholder="Short Description"
+                    value={newProject.description}
+                    onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Tech Stack (comma separated)"
+                    value={newProject.techStack}
+                    onChange={(e) => setNewProject({ ...newProject, techStack: e.target.value })}
+                  />
+                </div>
+                <Button type="submit" className="w-full">Create Project</Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
+        {projects.length === 0 && !showCreateForm ? (
           <div className="text-center text-muted-foreground">No projects found. Create one to get started!</div>
         ) : (
           projects.map((project) => (

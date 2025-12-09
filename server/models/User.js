@@ -8,7 +8,10 @@ const userSchema = new mongoose.Schema({
   skills: { type: [String], default: [] },
   bio: { type: String, default: '' },
   portfolio: { type: String, default: '' }, // Single URL for simplicity based on prompt, or [String] if needed later
-  score: { type: Number, default: 0 }
+  score: { type: Number, default: 0 },
+  isMentor: { type: Boolean, default: false },
+  jobTitle: { type: String, default: '' },
+  company: { type: String, default: '' }
 });
 
 userSchema.pre('save', async function (next) {
