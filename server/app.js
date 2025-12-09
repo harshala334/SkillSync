@@ -53,6 +53,8 @@ const userRoutes = require("./routes/user.routes");
 app.use("/api/users", userRoutes);
 const projectRoutes = require("./routes/project.routes");
 app.use("/api/projects", projectRoutes);
+const taskRoutes = require("./routes/task.routes");
+app.use("/api/tasks", taskRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

@@ -1,46 +1,80 @@
 'use client'
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, MoreHorizontal, Calendar, UserCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getTasks, createTask, reorderTasks } from "../services/taskService";
+import { getAllProjects } from "../services/projectService";
 
 const initialData = {
-    tasks: {
-        'task-1': { id: 'task-1', content: 'Design Homepage UI', tag: 'Design', priority: 'High', assignee: 'Riya' },
-        'task-2': { id: 'task-2', content: 'Setup MongoDB Database', tag: 'Backend', priority: 'High', assignee: 'Kabir' },
-        'task-3': { id: 'task-3', content: 'Implement Authentication', tag: 'Backend', priority: 'Medium', assignee: 'Arjun' },
-        'task-4': { id: 'task-4', content: 'Create User Profile Page', tag: 'Frontend', priority: 'Low', assignee: 'Aarav' },
-    },
+    tasks: {},
     columns: {
-        'column-1': {
-            id: 'column-1',
-            title: 'To Do',
-            taskIds: ['task-1', 'task-2', 'task-3', 'task-4'],
-        },
-        'column-2': {
-            id: 'column-2',
-            title: 'In Progress',
-            taskIds: [],
-        },
-        'column-3': {
-            id: 'column-3',
-            title: 'Done',
-            taskIds: [],
-        },
+        'column-1': { id: 'column-1', title: 'To Do', taskIds: [] },
+        'column-2': { id: 'column-2', title: 'In Progress', taskIds: [] },
+        'column-3': { id: 'column-3', title: 'Done', taskIds: [] },
     },
     columnOrder: ['column-1', 'column-2', 'column-3'],
 };
 
 export default function ProjectBoardPage() {
     const [data, setData] = useState(initialData);
+    const [loading, setLoading] = useState(true);
+    const [projects, setProjects] = useState([]);
+    const [currentProject, setCurrentProject] = useState(null);
 
-    const onDragEnd = (result) => {
+    useEffect(() => {
+        const init = async () => {
+            try {
+                const projectsData = await getAllProjects();
+                setProjects(projectsData);
+                if (projectsData.length > 0) {
+                    const firstProject = projectsData[0];
+                    setCurrentProject(firstProject);
+                    await fetchTasks(firstProject._id);
+                }
+            } catch (err) {
+                console.error("Failed to init board", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        init();
+    }, []);
+
+    const fetchTasks = async (projectId) => {
+        try {
+            const tasksData = await getTasks(projectId);
+            setData(tasksData);
+        } catch (err) {
+            console.error("Failed to load tasks", err);
+        }
+    };
+
+    const handleCreateTask = async () => {
+        if (!currentProject) return;
+        const content = prompt("Enter task content:");
+        if (!content) return;
+
+        try {
+            await createTask({
+                content,
+                tag: 'General',
+                priority: 'Medium',
+                assignee: 'Unassigned',
+                projectId: currentProject._id
+            });
+            fetchTasks(currentProject._id);
+        } catch (err) {
+            alert("Failed to create task");
+        }
+    }
+
+    const onDragEnd = async (result) => {
         const { destination, source, draggableId } = result;
 
         if (!destination) return;
-
         if (
             destination.droppableId === source.droppableId &&
             destination.index === source.index
@@ -51,50 +85,52 @@ export default function ProjectBoardPage() {
         const start = data.columns[source.droppableId];
         const finish = data.columns[destination.droppableId];
 
+        // Optimistic Update
+        let newData;
         if (start === finish) {
             const newTaskIds = Array.from(start.taskIds);
             newTaskIds.splice(source.index, 1);
             newTaskIds.splice(destination.index, 0, draggableId);
 
-            const newColumn = {
-                ...start,
-                taskIds: newTaskIds,
-            };
-
-            setData({
+            const newColumn = { ...start, taskIds: newTaskIds };
+            newData = {
                 ...data,
-                columns: {
-                    ...data.columns,
-                    [newColumn.id]: newColumn,
-                },
-            });
-            return;
+                columns: { ...data.columns, [newColumn.id]: newColumn },
+            };
+        } else {
+            const startTaskIds = Array.from(start.taskIds);
+            startTaskIds.splice(source.index, 1);
+            const newStart = { ...start, taskIds: startTaskIds };
+
+            const finishTaskIds = Array.from(finish.taskIds);
+            finishTaskIds.splice(destination.index, 0, draggableId);
+            const newFinish = { ...finish, taskIds: finishTaskIds };
+
+            newData = {
+                ...data,
+                columns: { ...data.columns, [newStart.id]: newStart, [newFinish.id]: newFinish },
+            };
         }
+        setData(newData);
 
-        // Moving from one list to another
-        const startTaskIds = Array.from(start.taskIds);
-        startTaskIds.splice(source.index, 1);
-        const newStart = {
-            ...start,
-            taskIds: startTaskIds,
-        };
-
-        const finishTaskIds = Array.from(finish.taskIds);
-        finishTaskIds.splice(destination.index, 0, draggableId);
-        const newFinish = {
-            ...finish,
-            taskIds: finishTaskIds,
-        };
-
-        setData({
-            ...data,
-            columns: {
-                ...data.columns,
-                [newStart.id]: newStart,
-                [newFinish.id]: newFinish,
-            },
-        });
+        // API Call
+        try {
+            // Need to send the new state (task IDs in destination column + source column)
+            await reorderTasks({
+                projectId: currentProject._id,
+                sourceColumnId: source.droppableId,
+                destinationColumnId: destination.droppableId,
+                sourceTaskIds: newData.columns[source.droppableId].taskIds,
+                destinationTaskIds: newData.columns[destination.droppableId].taskIds
+            });
+        } catch (err) {
+            console.error("Failed to save reorder", err);
+            // Ideally revert state here, but skipping for simplicity
+        }
     };
+
+    if (loading) return <div className="pt-24 text-center">Loading Board...</div>;
+    if (!currentProject) return <div className="pt-24 text-center">No projects found. Please create or join a project first.</div>;
 
     return (
         <div className="min-h-screen bg-background pt-24 pb-16 px-6 lg:px-12 overflow-x-auto">
@@ -103,21 +139,19 @@ export default function ProjectBoardPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-heading font-bold text-foreground">Project Board</h1>
-                        <p className="text-muted-foreground">Manage tasks, track progress, and collaborate with your team.</p>
+                        <h1 className="text-3xl font-heading font-bold text-foreground">Project Board: {currentProject.title}</h1>
+                        <p className="text-muted-foreground">{currentProject.description}</p>
                     </div>
                     <div className="flex gap-3">
+                        {/* Teammates Avatars Placeholder */}
                         <div className="flex -space-x-2">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-secondary flex items-center justify-center text-xs font-bold">
-                                    U{i}
+                            {currentProject.members && currentProject.members.slice(0, 3).map((m, i) => (
+                                <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-secondary flex items-center justify-center text-xs font-bold overflow-hidden">
+                                    {m.avatar ? <img src={m.avatar} alt="av" /> : (m.name?.[0] || 'U')}
                                 </div>
                             ))}
-                            <div className="w-8 h-8 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
-                                +2
-                            </div>
                         </div>
-                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                        <Button onClick={handleCreateTask} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                             <Plus className="w-4 h-4 mr-2" />
                             New Task
                         </Button>
@@ -171,7 +205,7 @@ export default function ProjectBoardPage() {
                                                                                     'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'}
                                       border-none
                                     `}>
-                                                                            {task.tag}
+                                                                            {task.tag || 'General'}
                                                                         </Badge>
                                                                         <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 -mt-2">
                                                                             <MoreHorizontal className="w-3 h-3" />
@@ -187,10 +221,10 @@ export default function ProjectBoardPage() {
                                                                         </div>
                                                                         <div className="flex items-center gap-2">
                                                                             <div className={`w-2 h-2 rounded-full ${task.priority === 'High' ? 'bg-red-500' :
-                                                                                    task.priority === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
+                                                                                task.priority === 'Medium' ? 'bg-yellow-500' : 'bg-green-500'
                                                                                 }`} title={`Priority: ${task.priority}`} />
                                                                             <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                                                                                {task.assignee[0]}
+                                                                                {task.assignee ? task.assignee[0] : 'U'}
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -204,7 +238,7 @@ export default function ProjectBoardPage() {
                                         )}
                                     </Droppable>
 
-                                    <Button variant="ghost" className="w-full mt-3 text-muted-foreground hover:text-primary hover:bg-background border border-transparent hover:border-border border-dashed">
+                                    <Button onClick={handleCreateTask} variant="ghost" className="w-full mt-3 text-muted-foreground hover:text-primary hover:bg-background border border-transparent hover:border-border border-dashed">
                                         <Plus className="w-4 h-4 mr-2" />
                                         Add Task
                                     </Button>
