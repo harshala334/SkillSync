@@ -1,85 +1,45 @@
 // src/pages/TeammatesPage.jsx
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, UserPlus, ArrowRight } from "lucide-react";
-
-// Dummy data: multiple projects, each with its own teammates
-const projects = [
-  {
-    id: "p1",
-    title: "AI Canteen System",
-    description:
-      "Smart menu, order predictions, and feedback analysis using NLP & dashboards.",
-    teammates: [
-      {
-        id: "u1",
-        name: "Aarav Patel",
-        role: "Frontend Developer",
-        avatar: "https://ui-avatars.com/api/?name=Aarav+Patel&background=random",
-      },
-      {
-        id: "u2",
-        name: "Meera Joshi",
-        role: "ML Engineer",
-        avatar: "https://ui-avatars.com/api/?name=Meera+Joshi&background=random",
-      },
-      {
-        id: "u3",
-        name: "Rohit Mehta",
-        role: "Designer",
-        avatar: "https://ui-avatars.com/api/?name=Rohit+Mehta&background=random",
-      },
-    ],
-  },
-  {
-    id: "p2",
-    title: "Alumni Connect Platform",
-    description:
-      "Mentorship matching, events, and verified achievements for campus alumni.",
-    teammates: [
-      {
-        id: "u4",
-        name: "Riya Sharma",
-        role: "UI/UX Designer",
-        avatar: "https://ui-avatars.com/api/?name=Riya+Sharma&background=random",
-      },
-      {
-        id: "u5",
-        name: "Arjun Verma",
-        role: "Backend Engineer",
-        avatar: "https://ui-avatars.com/api/?name=Arjun+Verma&background=random",
-      },
-    ],
-  },
-  {
-    id: "p3",
-    title: "Smart City Portal",
-    description:
-      "Citizen reports, analytics, and open data visualizations for local services.",
-    teammates: [
-      {
-        id: "u6",
-        name: "Kabir Singh",
-        role: "Backend Engineer",
-        avatar: "https://ui-avatars.com/api/?name=Kabir+Singh&background=random",
-      },
-      {
-        id: "u7",
-        name: "Simran Kaur",
-        role: "Data Analyst",
-        avatar: "https://ui-avatars.com/api/?name=Simran+Kaur&background=random",
-      },
-      {
-        id: "u8",
-        name: "Aditya Rao",
-        role: "Full-Stack Dev",
-        avatar: "https://ui-avatars.com/api/?name=Aditya+Rao&background=random",
-      },
-    ],
-  },
-];
+import { getAllProjects, joinProject } from "../services/projectService";
 
 export default function TeamMates() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const data = await getAllProjects();
+      setProjects(data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleJoin = async (projectId) => {
+    try {
+      await joinProject(projectId);
+      alert("Successfully joined the project!");
+      fetchProjects(); // Refresh list to show updated members
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to join project");
+    }
+  };
+
+  if (loading) return <div className="text-center pt-24 text-foreground">Loading projects...</div>;
+  if (error) return <div className="text-center pt-24 text-red-500">{error}</div>;
+
   return (
     <div className="min-h-screen bg-background pt-24 pb-16 px-6 lg:px-12">
       <div className="max-w-7xl mx-auto space-y-16">
@@ -94,62 +54,69 @@ export default function TeamMates() {
           </p>
         </div>
 
-        {projects.map((project) => (
-          <section key={project.id} className="space-y-6">
-            {/* Section header */}
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-border pb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                  {project.title}
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">Active</span>
-                </h2>
-                <p className="text-muted-foreground mt-1 max-w-2xl">{project.description}</p>
-              </div>
-              <Button className="self-start sm:self-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl">
-                <Users className="w-4 h-4 mr-2" />
-                Join Project
-              </Button>
-            </div>
-
-            {/* Teammates grid */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {project.teammates.map((mate) => (
-                <Card
-                  key={mate.id}
-                  className="group relative overflow-hidden rounded-2xl border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card/50 backdrop-blur-sm"
+        {projects.length === 0 ? (
+          <div className="text-center text-muted-foreground">No projects found. Create one to get started!</div>
+        ) : (
+          projects.map((project) => (
+            <section key={project._id} className="space-y-6">
+              {/* Section header */}
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                    {project.title}
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">Active</span>
+                  </h2>
+                  <p className="text-muted-foreground mt-1 max-w-2xl">{project.description}</p>
+                </div>
+                <Button
+                  onClick={() => handleJoin(project._id)}
+                  className="self-start sm:self-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Users className="w-4 h-4 mr-2" />
+                  Join Project
+                </Button>
+              </div>
 
-                  <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                    <div className="relative">
-                      <img
-                        src={mate.avatar}
-                        alt={mate.name}
-                        className="w-12 h-12 rounded-full border-2 border-background shadow-sm group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base font-semibold leading-tight">
-                        {mate.name}
-                      </CardTitle>
-                      <p className="text-xs font-medium text-muted-foreground mt-0.5">{mate.role}</p>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Button variant="outline" className="w-full justify-between group/btn hover:border-primary hover:text-primary transition-colors rounded-xl">
-                      <span className="flex items-center">
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Connect
-                      </span>
-                      <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        ))}
+              {/* Teammates grid */}
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {project.members && project.members.map((mate) => (
+                  <Card
+                    key={mate._id}
+                    className="group relative overflow-hidden rounded-2xl border-border hover:border-primary/50 transition-all duration-300 hover:shadow-xl bg-card/50 backdrop-blur-sm"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                      <div className="relative">
+                        <img
+                          src={mate.avatar || `https://ui-avatars.com/api/?name=${mate.name}&background=random`}
+                          alt={mate.name}
+                          className="w-12 h-12 rounded-full border-2 border-background shadow-sm group-hover:scale-105 transition-transform"
+                        />
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base font-semibold leading-tight">
+                          {mate.name}
+                        </CardTitle>
+                        <p className="text-xs font-medium text-muted-foreground mt-0.5">{mate.email}</p>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <Button variant="outline" className="w-full justify-between group/btn hover:border-primary hover:text-primary transition-colors rounded-xl">
+                        <span className="flex items-center">
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Connect
+                        </span>
+                        <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          ))
+        )}
       </div>
     </div>
   );
